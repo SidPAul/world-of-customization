@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - World of Customization{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h2 class="fw-bold mb-0">Overview</h2>
+        <p class="text-muted">Welcome back, Admin! Here's what's happening today.</p>
+    </div>
+    <div>
+        <button class="btn btn-primary"><i class="fas fa-download me-2"></i> Download Report</button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-5">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-stat-card bg-gradient-primary text-white h-100 shadow-lg border-0">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-uppercase mb-1 small fw-bold text-white-50">Total Users</div>
+                        <div class="h2 mb-0 fw-bold">{{ total_users }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-stat-card bg-gradient-success text-white h-100 shadow-lg border-0">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-uppercase mb-1 small fw-bold text-white-50">Products</div>
+                        <div class="h2 mb-0 fw-bold">{{ total_products }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-box-open fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-stat-card bg-gradient-warning text-white h-100 shadow-lg border-0">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-uppercase mb-1 small fw-bold text-white-50">Orders</div>
+                        <div class="h2 mb-0 fw-bold">{{ total_orders }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-bag fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-stat-card bg-gradient-danger text-white h-100 shadow-lg border-0">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-uppercase mb-1 small fw-bold text-white-50">Revenue</div>
+                        <div class="h2 mb-0 fw-bold">${{ total_revenue }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-white">
+                <h6 class="m-0 fw-bold text-primary">Sales Overview</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area" style="height: 320px;">
+                    <canvas id="orderStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-white">
+                <h6 class="m-0 fw-bold text-primary">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary btn-block text-start">
+                        <i class="fas fa-cogs me-2"></i> Django Admin
+                    </a>
+                    <a href="{% url 'admin-order-list' %}" class="btn btn-outline-info btn-block text-start">
+                        <i class="fas fa-list me-2"></i> Manage Orders
+                    </a>
+                    <a href="{% url 'product-list' %}" class="btn btn-outline-primary btn-block text-start">
+                        <i class="fas fa-eye me-2"></i> View Storefront
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Notification Placeholder -->
+        <div class="card shadow">
+            <div class="card-header py-3 bg-white">
+                <h6 class="m-0 fw-bold text-primary">System Health</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="small text-gray-500">Server Status</div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="small text-gray-500">Database Load</div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 40%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ chart_labels|json_script:"chart-labels" }}
+{{ chart_data|json_script:"chart-data" }}
+
+<script>
+    // Chart.js Configuration
+    Chart.defaults.font.family = "'Outfit', sans-serif";
+
+    const chartLabels = JSON.parse(document.getElementById('chart-labels').textContent);
+    const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+
+    var ctx = document.getElementById('orderStatusChart').getContext('2d');
+    var orderStatusChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                data: chartData,
+                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
+                hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a'],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                },
+                tooltip: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    padding: 15,
+                    displayColors: false,
+                }
+            },
+            cutout: '70%',
+        },
+    });
+</script>
+{% endblock %}

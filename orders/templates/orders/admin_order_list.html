@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Orders - World of Customization{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">All Orders</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>User</th>
+            <th>Date</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.user.username }}</td>
+            <td>{{ order.created_at|date:"M d, Y" }}</td>
+            <td>${{ order.get_total_cost }}</td>
+            <td><span class="badge bg-info">{{ order.status }}</span></td>
+            <td>
+                <!-- Add action buttons here later -->
+                <button class="btn btn-sm btn-primary">View</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

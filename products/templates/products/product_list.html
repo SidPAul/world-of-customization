@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_filters %}
+
+{% block title %}Shop Our Collections - World of Customization{% endblock %}
+
+{% block content %}
+<div class="product-detail-page">
+    <div class="row g-5">
+        <!-- Sidebar: Categories -->
+        <div class="col-lg-3">
+            <div class="category-sidebar p-4 rounded-4 shadow-sm border border-light"
+                style="background: var(--card-bg);">
+                <h5 class="section-title text-start fs-5 mb-4" style="font-family: var(--font-heading);">Collections
+                </h5>
+                <div class="list-group list-group-flush border-0">
+                    <a href="{% url 'product-list' %}"
+                        class="list-group-item list-group-item-action border-0 px-0 mb-2 py-2 d-flex justify-content-between align-items-center {% if not request.GET.category %}fw-bold text-accent{% else %}text-secondary{% endif %}"
+                        style="background: transparent;">
+                        <span>All Items</span>
+                        <i class="fas fa-chevron-right small opacity-50"></i>
+                    </a>
+                    {% for category in categories %}
+                    <a href="?category={{ category.id }}"
+                        class="list-group-item list-group-item-action border-0 px-0 mb-2 py-2 d-flex justify-content-between align-items-center {% if request.GET.category|add:0 == category.id %}fw-bold text-accent{% else %}text-secondary{% endif %}"
+                        style="background: transparent;">
+                        <span>{{ category.name }}</span>
+                        <i class="fas fa-chevron-right small opacity-50"></i>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content: Product Grid -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <h2 class="section-title text-start mb-0">Our Shop</h2>
+                <div class="text-secondary small">
+                    Showing <strong>{{ products|length }}</strong> exquisite pieces
+                </div>
+            </div>
+
+            <div class="row g-4">
+                {% for product in products %}
+                <div class="col-md-4 col-sm-6">
+                    <a href="{% url 'product-detail' product.id %}" class="card-link">
+                        <div class="card-premium h-100">
+                            <div class="image-container">
+                                {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                {% else %}
+                                <img src="https://via.placeholder.com/300" alt="Placeholder">
+                                {% endif %}
+                            </div>
+                            <div class="card-content">
+                                <span class="card-badge">{{ product.category.name }}</span>
+                                <h4 class="card-title-premium">{{ product.name }}</h4>
+                                <div class="card-footer-premium">
+                                    <span class="card-price">{% regional_price product.price %}</span>
+                                    <div class="card-icon">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% empty %}
+                <div class="col-12 py-5 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-search fs-1 opacity-25"></i>
+                    </div>
+                    <h3 class="h5">No products found in this category</h3>
+                    <p class="text-secondary">Please explore our other collections.</p>
+                    <a href="{% url 'product-list' %}" class="btn btn-primary-gradient mt-3">View All Products</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

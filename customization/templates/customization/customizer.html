@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Customize {{ product.name }} - World of Customization{% endblock %}
+
+{% block extra_css %}
+<style>
+    #canvas-container {
+        width: 500px;
+        height: 500px;
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="customizer-page container-fluid px-lg-5">
+    <div class="customizer-header">
+        <span class="product-badge">{{ product.category.name }}</span>
+        <h1 class="product-title mt-2">Customize: {{ product.name }}</h1>
+    </div>
+
+    <div class="customizer-container">
+        <!-- Canvas/Preview Area -->
+        <div class="canvas-frame">
+            <div id="canvas-container">
+                <canvas id="tshirt-canvas" width="500" height="500"></canvas>
+            </div>
+        </div>
+
+        <!-- Sidebar Tools -->
+        <div class="tools-sidebar">
+            <div class="card tools-card">
+                <div class="tools-header">
+                    <h5><i class="fas fa-tools me-2 text-accent"></i> Design Tools</h5>
+                </div>
+                <div class="tools-body">
+                    <!-- Text Section -->
+                    <div class="tool-section">
+                        <label class="tool-label">Add Your Text</label>
+                        <div class="tool-input-group">
+                            <input type="text" id="text-input" class="form-control" placeholder="Type something...">
+                            <button class="btn-add-text" id="add-text-btn">Add</button>
+                        </div>
+                    </div>
+
+                    <!-- Color Section -->
+                    <div class="tool-section">
+                        <label class="tool-label">Text Color</label>
+                        <div class="color-picker-wrapper">
+                            <input type="color" id="text-color" class="form-control-color custom-color-input"
+                                value="#000000">
+                            <span class="small text-secondary fw-medium">Choose a color</span>
+                        </div>
+                    </div>
+
+                    <!-- Image Section -->
+                    <div class="tool-section">
+                        <label class="tool-label">Upload Artwork</label>
+                        <div class="tool-input-group">
+                            <input type="file" id="img-upload" class="form-control" accept="image/*">
+                        </div>
+                    </div>
+
+                    <!-- Action Row -->
+                    <div class="customizer-actions">
+                        <button class="btn-action btn-delete" id="delete-btn">
+                            <i class="fas fa-trash-alt"></i> Delete Selected
+                        </button>
+                        <button class="btn-action btn-save-cart" id="save-design-btn">
+                            <i class="fas fa-shopping-cart"></i> Save & Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('Customizer: Initialization started...');
+
+        if (typeof fabric === 'undefined') {
+            console.error('CRITICAL: Fabric.js library not detected.');
+            return;
+        }
+
+        try {
+            const productId = "{{ product.id }}";
+            const productImageUrl = "{{ product.image.url }}";
+
+            const canvas = new fabric.Canvas('tshirt-canvas', {
+                backgroundColor: '#ffffff',
+                preserveObjectStacking: true
+            });
+
+            // Add a "Loading" indicator to the canvas
+            const loadingText = new fabric.Text('Loading Product Preview...', {
+                fontSize: 20,
+                fill: '#666666',
+                originX: 'center',
+                originY: 'center',
+                left: canvas.width / 2,
+                top: canvas.height / 2,
+                fontFamily: 'Outfit'
+            });
+            canvas.add(loadingText);
+            canvas.renderAll();
+
+            // Load Product Image
+            fabric.util.loadImage(productImageUrl, function (imgElement) {
+                if (!imgElement) {
+                    loadingText.set({ text: 'Error: Image failed to load.' });
+                    canvas.renderAll();
+                    return;
+                }
+
+                const imgInstance = new fabric.Image(imgElement);
+                const scale = Math.min(canvas.width / imgElement.width, canvas.height / imgElement.height) * 0.95;
+
+                imgInstance.set({
+                    scaleX: scale,
+                    scaleY: scale,
+                    originX: 'center',
+                    originY: 'center',
+                    left: canvas.width / 2,
+                    top: canvas.height / 2,
+                    selectable: false,
+                    evented: false,
+                    opacity: 0
+                });
+
+                canvas.remove(loadingText);
+                canvas.add(imgInstance);
+                canvas.sendToBack(imgInstance);
+
+                imgInstance.animate('opacity', 1, {
+                    duration: 400,
+                    onChange: canvas.renderAll.bind(canvas)
+                });
+
+                canvas.renderAll();
+            }, null, { crossOrigin: 'anonymous' });
+
+            // Tool Event Listeners
+            document.getElementById('add-text-btn').addEventListener('click', function () {
+                const textValue = document.getElementById('text-input').value;
+                if (textValue) {
+                    const textObj = new fabric.IText(textValue, {
+                        left: 100, top: 100,
+                        fill: document.getElementById('text-color').value,
+                        fontFamily: 'Outfit', fontSize: 40
+                    });
+                    canvas.add(textObj);
+                    canvas.setActiveObject(textObj);
+                    canvas.renderAll();
+                    document.getElementById('text-input').value = '';
+                }
+            });
+
+            // Helper to update picker from selection
+            canvas.on('selection:created', function (e) {
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && (activeObj.type === 'text' || activeObj.type === 'i-text')) {
+                    document.getElementById('text-color').value = activeObj.fill;
+                }
+            });
+            canvas.on('selection:updated', function (e) {
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && (activeObj.type === 'text' || activeObj.type === 'i-text')) {
+                    document.getElementById('text-color').value = activeObj.fill;
+                }
+            });
+
+            document.getElementById('text-color').addEventListener('input', function () {
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && (activeObj.type === 'text' || activeObj.type === 'i-text')) {
+                    activeObj.set('fill', this.value);
+                    canvas.renderAll();
+                }
+            });
+
+            document.getElementById('img-upload').addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const imgObj = new Image();
+                    imgObj.src = event.target.result;
+                    imgObj.onload = function () {
+                        const imgInstance = new fabric.Image(imgObj);
+                        const scale = Math.min(200 / imgObj.width, 200 / imgObj.height);
+                        imgInstance.set({ scaleX: scale, scaleY: scale, left: 150, top: 150 });
+                        canvas.add(imgInstance);
+                        canvas.setActiveObject(imgInstance);
+                        canvas.renderAll();
+                    }
+                }
+                reader.readAsDataURL(file);
+            });
+
+            document.getElementById('delete-btn').addEventListener('click', function () {
+                const activeObjects = canvas.getActiveObjects();
+                if (activeObjects.length > 0) {
+                    activeObjects.forEach(obj => {
+                        if (obj.selectable !== false) canvas.remove(obj);
+                    });
+                    canvas.discardActiveObject();
+                    canvas.renderAll();
+                }
+            });
+
+            document.getElementById('save-design-btn').addEventListener('click', function () {
+                const saveBtn = this;
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Saving...';
+
+                const designData = JSON.stringify(canvas.toJSON());
+                const previewImage = canvas.toDataURL({ format: 'png', quality: 0.8 });
+
+                fetch("{% url 'save-design' %}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: JSON.stringify({ product_id: productId, design_data: designData, preview_image: previewImage })
+                })
+                    .then(response => {
+                        return response.json().then(data => {
+                            if (!response.ok) throw new Error(data.message || 'Server error ' + response.status);
+                            return data;
+                        });
+                    })
+                    .then(data => {
+                        if (data.status === 'success') {
+                            saveBtn.style.backgroundColor = '#10b981';
+                            saveBtn.innerHTML = '<i class="fas fa-check me-2"></i> Design Saved!';
+                            setTimeout(() => { window.location.href = "{% url 'cart-detail' %}"; }, 1000);
+                        } else { throw new Error(data.message || 'Unknown error'); }
+                    })
+                    .catch(err => {
+                        console.error('Save failed:', err);
+                        alert('Save Failed: ' + err.message);
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = '<i class="fas fa-shopping-cart me-2"></i> Save & Add to Cart';
+                    });
+            });
+        } catch (e) { console.error('Error:', e); }
+    });
+</script>
+{% endblock %}

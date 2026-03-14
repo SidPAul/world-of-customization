@@ -1,0 +1,89 @@
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <div class="nav-logo-container">
+                {% load static %}
+                <img src="{% static 'images/logo.png' %}" alt="World of Customization Logo" class="nav-brand-logo" />
+                <div class="nav-sparkle ns1"></div>
+                <div class="nav-sparkle ns2"></div>
+            </div>
+        </a>
+
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'product-list' %}">Shop</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'product-list' %}">Customize</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'order-history' %}">Orders</a>
+                </li>
+
+                {% if not user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                </li>
+                {% endif %}
+
+                <!-- Theme Toggle -->
+                <li class="nav-item ms-lg-3">
+                    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle Theme">
+                        <i id="theme-icon" class="fas fa-moon"></i>
+                    </button>
+                </li>
+
+                <!-- Cart -->
+                <li class="nav-item ms-lg-3">
+                    <a class="nav-link p-0 position-relative" href="{% url 'cart-detail' %}">
+                        <i class="fas fa-shopping-bag fs-5"></i>
+                    </a>
+                </li>
+
+                {% if user.is_authenticated %}
+                <li class="nav-item dropdown ms-lg-3">
+                    <a class="nav-link dropdown-toggle p-0" href="#" id="userDropdown" role="button"
+                        data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle fs-5"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item py-2" href="{% url 'profile' %}">Profile</a></li>
+                        <li>
+                            <hr class="dropdown-divider opacity-50">
+                        </li>
+                        <li>
+                            <form action="{% url 'logout' %}" method="post" class="px-0">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item py-2">Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<script>
+    function updateThemeIcon(theme) {
+        const icon = document.getElementById('theme-icon');
+        if (icon) {
+            icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const theme = document.documentElement.getAttribute('data-theme') || 'light';
+        updateThemeIcon(theme);
+    });
+</script>

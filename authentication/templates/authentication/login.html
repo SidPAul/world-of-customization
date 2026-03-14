@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Sign In - World of Customization{% endblock %}
+
+{% block content %}
+<div class="product-detail-page">
+    <div class="row justify-content-center py-5">
+        <div class="col-md-5 col-lg-4 px-4">
+            <div class="auth-card p-4 p-lg-5 rounded-4 shadow-sm border border-light"
+                style="background: var(--card-bg);">
+                <div class="text-center mb-5">
+                    <span class="text-accent small fw-bold text-uppercase tracking-wider">Welcome Back</span>
+                    <h2 class="section-title text-center mt-2 mb-0" style="font-size: 2rem;">Sign In</h2>
+                </div>
+
+                <form method="post" id="loginForm" class="purchase-form">
+                    {% csrf_token %}
+
+                    <div class="auth-fields-wrapper mb-4">
+                        {{ form|crispy }}
+                    </div>
+
+                    <button type="submit" class="btn-detail btn-cart-premium w-100 border-0 mb-3">
+                        <i class="fas fa-sign-in-alt me-2"></i> Log In
+                    </button>
+
+                    <div class="divider d-flex align-items-center my-4 opacity-50">
+                        <hr class="flex-grow-1">
+                        <span class="mx-3 small text-secondary">OR</span>
+                        <hr class="flex-grow-1">
+                    </div>
+
+                    <button type="button" id="googleSignIn" class="btn-detail btn-outline-custom w-100 mb-3" 
+                            style="display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 12px; font-weight: 600;">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" class="me-2">
+                        Continue with Google
+                    </button>
+
+                    <div class="text-center">
+                        <a href="#" class="small text-secondary text-decoration-none opacity-75">Forgot password?</a>
+                    </div>
+                </form>
+
+                <div class="auth-footer mt-5 pt-4 border-top text-center">
+                    <p class="text-secondary small mb-3">Don't have an account yet?</p>
+                    <a href="{% url 'register' %}" class="btn-detail btn-outline-custom w-100 text-decoration-none"
+                        style="display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 12px; font-weight: 600;">
+                        Create Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module">
+    import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const auth = window.firebaseAuth;
+        const googleBtn = document.getElementById('googleSignIn');
+        const loginForm = document.getElementById('loginForm');
+
+        // Google Sign In
+        googleBtn.addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const idToken = await result.user.getIdToken();
+                sendTokenToBackend(idToken);
+            } catch (error) {
+                console.error("Google Sign-In Error:", error);
+                alert("Login failed: " + error.message);
+            }
+        });
+
+        // Email/Password Sign In override
+        loginForm.addEventListener('submit', async (e) => {
+            // For now, we'll let Django handle traditional login as fallback
+            // but if you want full Firebase, we would intercept here
+        });
+
+        async function sendTokenToBackend(idToken) {
+            try {
+                const response = await fetch("{% url 'firebase-login' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ idToken: idToken })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert("Backend authentication failed: " + data.message);
+                }
+            } catch (error) {
+                console.error("Backend Error:", error);
+                alert("Communication error with server.");
+            }
+        }
+    });
+</script>
+{% endblock %}

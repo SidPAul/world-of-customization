@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}World of Customization{% endblock %}</title>
+
+    <!-- Google Fonts: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1.2">
+
+    <script>
+        // Critical: Prevent Theme Flash
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            // Dispatch event for components to react if needed
+            window.dispatchEvent(new Event('themeChanged'));
+
+            // Update icon
+            if (typeof updateThemeIcon === 'function') {
+                updateThemeIcon(newTheme);
+            }
+        }
+    </script>
+
+    <!-- Visibility Enforcement -->
+    <style>
+        /* Force high contrast on all potential titles and names */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .product-title,
+        .card-title-premium,
+        .section-title,
+        .hero-title,
+        .product-name,
+        .card-title {
+            color: #000000 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            font-weight: 800 !important;
+            -webkit-text-fill-color: #000000 !important;
+            /* Fix for some gradient overrides */
+        }
+
+        /* Dark mode overrides if the user selects it */
+        [data-theme="dark"] h1,
+        [data-theme="dark"] h2,
+        [data-theme="dark"] h3,
+        [data-theme="dark"] h4,
+        [data-theme="dark"] h5,
+        [data-theme="dark"] h6,
+        [data-theme="dark"] .product-title,
+        [data-theme="dark"] .card-title-premium,
+        [data-theme="dark"] .product-name {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        /* Special fix for headings that might be inside links */
+        a h1,
+        a h2,
+        a h3,
+        a h4,
+        a h5,
+        a h6,
+        a .card-title-premium {
+            color: #000000 !important;
+            text-decoration: none !important;
+        }
+
+        [data-theme="dark"] a h1,
+        [data-theme="dark"] a h2,
+        [data-theme="dark"] a h3 {
+            color: #ffffff !important;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Full-Screen Splash Screen -->
+    <div id="new-splash" class="premium-splash">
+        <!-- Deep background with subtle stars -->
+        <div class="splash-stars"></div>
+        <div class="splash-stars2"></div>
+
+        <!-- Diagonal glass beam -->
+        <div class="glass-beam"></div>
+
+        <div class="splash-content">
+            <img src="{% static 'images/logo.png' %}" alt="World of Customization Logo" class="splash-full-logo" />
+        </div>
+    </div>
+
+    {% include 'navbar.html' %}
+
+    {% block main_layout %}
+    <main>
+        {% if messages %}
+        <div class="container mt-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} border-0 shadow-sm rounded-4">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+    {% endblock %}
+
+    {% include 'footer.html' %}
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme toggle icon update logic
+        window.addEventListener('themeChanged', () => {
+            const theme = document.documentElement.getAttribute('data-theme');
+            if (typeof updateThemeIcon === 'function') {
+                updateThemeIcon(theme);
+            }
+        });
+
+        // Premium Splash Screen Logic
+        (function () {
+            // Only show splash once per session
+            if (sessionStorage.getItem('premiumSplashShown')) {
+                const splash = document.getElementById('new-splash');
+                if (splash) splash.remove();
+                return;
+            }
+
+            const splash = document.getElementById('new-splash');
+            if (!splash) return;
+
+            // Lock scrolling immediately
+            document.documentElement.classList.add('splash-active');
+
+            // Force reflow
+            splash.offsetHeight;
+
+            // Start the entrance animation
+            splash.classList.add('splash-visible');
+
+            // After 3 seconds, fade out smoothly
+            setTimeout(() => {
+                splash.classList.remove('splash-visible');
+                splash.classList.add('splash-hiding');
+
+                // Wait for the fade out transition (0.8s) before complete removal
+                setTimeout(() => {
+                    splash.remove();
+                    document.documentElement.classList.remove('splash-active');
+                    sessionStorage.setItem('premiumSplashShown', 'true');
+                }, 800);
+            }, 3000);
+        })();
+        // Password Visibility Toggle Logic
+        function initPasswordToggles() {
+            const passwordFields = document.querySelectorAll('.auth-fields-wrapper input[type="password"]');
+
+            passwordFields.forEach(field => {
+                // Skip if already wrapped
+                if (field.parentElement.classList.contains('password-toggle-wrapper')) return;
+
+                // Create wrapper
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('password-toggle-wrapper');
+
+                // Insert wrapper before field, then move field into wrapper
+                field.parentNode.insertBefore(wrapper, field);
+                wrapper.appendChild(field);
+
+                // Add eye icon
+                const eye = document.createElement('i');
+                eye.classList.add('fas', 'fa-eye', 'password-toggle-eye');
+                wrapper.appendChild(eye);
+
+                // Toggle logic
+                eye.addEventListener('click', () => {
+                    const isPassword = field.getAttribute('type') === 'password';
+                    field.setAttribute('type', isPassword ? 'text' : 'password');
+                    field.classList.toggle('password-field', !isPassword);
+
+                    // Update icon
+                    eye.classList.toggle('fa-eye', !isPassword);
+                    eye.classList.toggle('fa-eye-slash', isPassword);
+                });
+            });
+        }
+
+        // Initialize on load and theme change (to catch dynamic elements if any)
+        document.addEventListener('DOMContentLoaded', initPasswordToggles);
+        window.addEventListener('themeChanged', initPasswordToggles);
+    </script>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        // User requested authentication
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGR62vxAQD6X-U-fPKr90lrHBdS1aABkw",
+            authDomain: "world-of-customization.firebaseapp.com",
+            projectId: "world-of-customization",
+            storageBucket: "world-of-customization.firebasestorage.app",
+            messagingSenderId: "570070467987",
+            appId: "1:570070467987:web:04157dc88f1053087dd466",
+            measurementId: "G-C907C19W55"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        
+        // Expose to window so other scripts in the project can use it
+        window.firebaseApp = app;
+        window.firebaseAuth = auth;
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

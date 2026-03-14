@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load currency_filters %}
+
+{% block title %}{{ product.name }} - World of Customization{% endblock %}
+
+{% block content %}
+<div class="product-detail-page">
+    <div class="product-detail-grid">
+
+        <!-- Image Section -->
+        <div class="product-image-section">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="product-image-frame" alt="{{ product.name }}">
+            {% else %}
+            <img src="https://via.placeholder.com/600x800" class="product-image-frame" alt="No Image Available">
+            {% endif %}
+        </div>
+
+        <!-- Content Section -->
+        <div class="product-content-section">
+            <div>
+                <span class="product-badge">{{ product.category.name }}</span>
+                <h1 class="product-title mt-2">{{ product.name }}</h1>
+            </div>
+
+            <p class="product-price-tag">{% regional_price product.price %}</p>
+
+            <div class="product-desc-wrapper">
+                <p class="product-desc">{{ product.description }}</p>
+            </div>
+
+            <form action="{% url 'cart-add' product.pk %}" method="post" class="purchase-form">
+                {% csrf_token %}
+
+                <div class="qty-control">
+                    <label for="quantity" class="small fw-bold text-uppercase"
+                        style="color: var(--text-secondary);">Qty</label>
+                    <div class="qty-wrapper">
+                        <button type="button" class="qty-btn"
+                            onclick="this.parentNode.querySelector('input[type=number]').stepDown()">-</button>
+                        <input type="number" name="quantity" id="quantity" class="qty-input-field" value="1" min="1"
+                            max="{{ product.stock }}">
+                        <button type="button" class="qty-btn"
+                            onclick="this.parentNode.querySelector('input[type=number]').stepUp()">+</button>
+                    </div>
+                </div>
+
+                <div class="button-row">
+                    {% if product.stock > 0 %}
+                    <button type="submit" class="btn-detail btn-cart-premium">
+                        <i class="fas fa-shopping-bag me-2"></i> Add to Bag
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn-detail btn-disabled" disabled>Out of Stock</button>
+                    {% endif %}
+
+                    {% if product.is_customizable %}
+                    <a href="{% url 'customizer' product.pk %}" class="btn-detail btn-customize-brand">
+                        <i class="fas fa-magic me-2"></i> Customize
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

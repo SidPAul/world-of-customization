@@ -1,0 +1,142 @@
+[
+    {
+        "name": "Classic Minimalist T-Shirt",
+        "category": "Apparel",
+        "price": 899.00,
+        "description": "A premium heavyweight cotton T-shirt designed for comfort and style. Perfect for custom logo printing or unique artistic designs.",
+        "image_url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1000"
+    },
+    {
+        "name": "Urban Oversized Hoodie",
+        "category": "Apparel",
+        "price": 1899.00,
+        "description": "Stay cozy and stylish with our premium oversized hoodie. Made from a blend of soft fleece and cotton.",
+        "image_url": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1000"
+    },
+    {
+        "name": "Custom Embroidered Denim Jacket",
+        "category": "Apparel",
+        "price": 3499.00,
+        "description": "A timeless classic. Our sturdy denim jacket is ready for your custom embroidery or patch designs.",
+        "image_url": "https://images.unsplash.com/photo-1551537482-f2075a1d41f2?q=80&w=1000"
+    },
+    {
+        "name": "Matte Finish Phone Case",
+        "category": "Tech Accessories",
+        "price": 499.00,
+        "description": "Protect your device with style. Our ultra-slim phone case features a premium matte finish.",
+        "image_url": "https://images.unsplash.com/photo-1586105251261-72a756497a11?q=80&w=1000"
+    },
+    {
+        "name": "Leather & Felt Laptop Sleeve",
+        "category": "Tech Accessories",
+        "price": 1299.00,
+        "description": "Elegant protection for your laptop. This sleeve combines premium vegan leather with soft felt.",
+        "image_url": "https://images.unsplash.com/photo-1525964067082-dd193051bf9a?q=80&w=1000"
+    },
+    {
+        "name": "Velvet Touch Throw Pillow",
+        "category": "Home & Living",
+        "price": 749.00,
+        "description": "Add a touch of luxury to your living space. Our velvet throw pillows are incredibly soft.",
+        "image_url": "https://images.unsplash.com/photo-1579656335342-fcae8b53ba21?q=80&w=1000"
+    },
+    {
+        "name": "Abstract Woven Tapestry",
+        "category": "Home & Living",
+        "price": 1599.00,
+        "description": "Transform your walls with a custom woven tapestry. A unique way to display your favorite art.",
+        "image_url": "https://images.unsplash.com/photo-1582231538356-91e779a973f5?q=80&w=1000"
+    },
+    {
+        "name": "Engraved Oak Cutting Board",
+        "category": "Home & Living",
+        "price": 2299.00,
+        "description": "The perfect household gift. Our solid oak cutting boards can be laser-engraved with names or dates.",
+        "image_url": "https://images.unsplash.com/photo-1594382342004-86ca22eb620b?q=80&w=1000"
+    },
+    {
+        "name": "Handcrafted Leather Journal",
+        "category": "Stationery",
+        "price": 999.00,
+        "description": "Capture your thoughts in style. This handcrafted journal features premium leather covers.",
+        "image_url": "https://images.unsplash.com/photo-1544816153-199d8a2b85a0?q=80&w=1000"
+    },
+    {
+        "name": "Metallic Minimalist Desk Organizer",
+        "category": "Stationery",
+        "price": 1199.00,
+        "description": "Declutter your workspace with this sleek metallic organizer. A perfect blend of form and function.",
+        "image_url": "https://images.unsplash.com/photo-1544450170-a9f218a51b67?q=80&w=1000"
+    },
+    {
+        "name": "Gaming Precision Mouse Pad",
+        "category": "Gaming",
+        "price": 699.00,
+        "description": "Level up your setup. A large, high-friction surface perfect for precision gaming and custom artwork.",
+        "image_url": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?q=80&w=1000"
+    },
+    {
+        "name": "Eco-Friendly Canvas Tote",
+        "category": "Apparel",
+        "price": 399.00,
+        "description": "Your sustainable daily companion. Heavyweight canvas tote bag, perfect for groceries or a day out.",
+        "image_url": "https://images.unsplash.com/photo-1544816153-199d8a2b85a0?q=80&w=1000"
+    },
+    {
+        "name": "Minimalist Wall Clock",
+        "category": "Home & Living",
+        "price": 1499.00,
+        "description": "Timeless design for any room. A sleek, silent wall clock that can be customized with your own face design.",
+        "image_url": "https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?q=80&w=1000"
+    },
+    {
+        "name": "Premium Glass Water Bottle",
+        "category": "Accessories",
+        "price": 849.00,
+        "description": "Hydrate in style with our durable borosilicate glass bottle. Features a bamboo lid and silicone sleeve.",
+        "image_url": "https://images.unsplash.com/photo-1602143307185-8a155ca967ce?q=80&w=1000"
+    },
+    {
+        "name": "Cozy Knit Beanie",
+        "category": "Apparel",
+        "price": 599.00,
+        "description": "Stay warm with our soft, ribbed knit beanie. Available in multiple colors and ready for custom patches.",
+        "image_url": "https://images.unsplash.com/photo-1576871337622-98d48d1cf027?q=80&w=1000"
+    },
+    {
+        "name": "Handmade Ceramic Coasters",
+        "category": "Home & Living",
+        "price": 549.00,
+        "description": "Protect your surfaces with style. A set of 4 handmade ceramic coasters with a cork base.",
+        "image_url": "https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=1000"
+    },
+    {
+        "name": "Pro Slim Power Bank",
+        "category": "Tech Accessories",
+        "price": 2499.00,
+        "description": "Charge on the go. 10,000mAh capacity in an ultra-slim metallic body that can be laser-engraved.",
+        "image_url": "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?q=80&w=1000"
+    },
+    {
+        "name": "Illustrated Sticker Pack",
+        "category": "Stationery",
+        "price": 249.00,
+        "description": "Personalize anything. A pack of 10 high-quality vinyl stickers with vibrant colors and unique designs.",
+        "image_url": "https://images.unsplash.com/photo-1572375927501-44447e4d25a?q=80&w=1000"
+    },
+    {
+        "name": "Non-Slip Yoga Mat",
+        "category": "Accessories",
+        "price": 1999.00,
+        "description": "Your perfect workout partner. High-density, non-slip yoga mat with an etched alignment guide.",
+        "image_url": "https://images.unsplash.com/photo-1592432676556-2693bc2f754d?q=80&w=1000"
+    },
+    {
+        "name": "Custom Enamel Pin",
+        "category": "Accessories",
+        "price": 299.00,
+        "description": "Small details, big impact. Collectible enamel pin ready for your unique vector artwork.",
+        "image_url": "https://images.unsplash.com/photo-1611681229380-45c110cd998d?q=80&w=1000"
+    }
+]

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_filters %}
+
+{% block title %}World of Customization - Design Without Limits{% endblock %}
+
+{% block main_layout %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="badge rounded-pill bg-primary px-3 py-2 mb-3 opacity-75">Premium Customization</span>
+                <h1 class="hero-title">
+                    CUSTOMIZE<br>
+                    YOUR STYLE<br>
+                    YOUR WAY
+                </h1>
+                <p class="hero-subtitle">Create personalized T-shirts, mugs, hoodies, and accessories using our
+                    real-time interactive customization tools.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'product-list' %}" class="btn btn-primary-gradient px-4 py-3 fs-5">Start
+                        Designing</a>
+                    <a href="{% url 'product-list' %}" class="btn btn-outline-custom px-4 py-3 fs-5">Explore
+                        Products</a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <!-- Custom UI Layout Visual -->
+                <div class="mockup-container">
+                    <div class="text-center mb-4">
+                        <span class="text-accent small fw-bold text-uppercase tracking-wider">Bespoke Editor</span>
+                    </div>
+
+                    <!-- Luxury Product Mockup with UI Elements -->
+                    <div class="position-relative">
+                        <img src="{% static 'images/hero_mockup.png' %}" alt="Luxury Product Mockup"
+                            class="hero-product-image rounded-4 shadow-lg w-100">
+
+                        <!-- Image already contains the personalization preview for a cleaner look -->
+
+                        <!-- Floating Tool Pods -->
+                        <div class="position-absolute top-0 start-0 m-3 d-flex flex-column gap-3">
+                            <div class="mockup-tool-icon">
+                                <i class="fas fa-signature text-primary"></i>
+                            </div>
+                            <div class="mockup-tool-icon">
+                                <i class="fas fa-palette text-secondary"></i>
+                            </div>
+                        </div>
+
+                        <div class="position-absolute bottom-0 end-0 m-3">
+                            <div class="mockup-tool-icon">
+                                <i class="fas fa-expand-arrows-alt text-accent"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Luxury Color Palette -->
+                    <div class="ui-controls">
+                        <div class="ui-dot shadow-sm" style="background: #E8D8C3;" title="Champagne"></div>
+                        <div class="ui-dot shadow-sm" style="background: #2C2C2C;" title="Charcoal"></div>
+                        <div class="ui-dot shadow-sm" style="background: #708090;" title="Slate"></div>
+                        <div class="ui-dot shadow-sm" style="background: #B76E79;" title="Rose Gold"></div>
+                        <div class="ms-3">
+                            <span class="text-accent small fw-bold uppercase">Choose Finish</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="section-padding" style="background: var(--bg-color);">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title mb-2">How It Works</h2>
+            <p class="text-secondary">Three simple steps to bring your ideas to life.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 class="h4 mb-3">1. Choose Product</h3>
+                    <p class="text-secondary mb-0">Select from our curated catalog of high-quality customizable items.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="icon-wrapper" style="background: rgba(20, 184, 166, 0.1); color: var(--accent);">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h3 class="h4 mb-3">2. Customize in Real Time</h3>
+                    <p class="text-secondary mb-0">Add text, upload photos, and change colors with our instant preview
+                        tool.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="icon-wrapper" style="background: rgba(255, 107, 107, 0.1); color: var(--secondary);">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h3 class="h4 mb-3">3. Secure Checkout</h3>
+                    <p class="text-secondary mb-0">Order with confidence and get your creation delivered to your
+                        doorstep.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <h2 class="section-title text-start mb-0">Featured Products</h2>
+                <p class="text-secondary mt-2 mb-0">Handpicked items for your inspiration.</p>
+            </div>
+            <a href="{% url 'product-list' %}" class="text-primary fw-bold text-decoration-none">View All <i
+                    class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+
+        <div class="row g-4">
+            {% for product in featured_products %}
+            <div class="col-md-3">
+                <a href="{% url 'product-detail' product.id %}" class="card-link">
+                    <div class="card-premium h-100">
+                        <div class="image-container">
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                            {% else %}
+                            <img src="https://via.placeholder.com/300" alt="Placeholder">
+                            {% endif %}
+                        </div>
+                        <div class="card-content">
+                            <span class="card-badge">{{ product.category.name }}</span>
+                            <h4 class="card-title-premium">{{ product.name }}</h4>
+                            <div class="card-footer-premium">
+                                <span class="card-price">{% regional_price product.price %}</span>
+                                <div class="card-icon">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted py-5">
+                <p>No products featured yet. Check back soon!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

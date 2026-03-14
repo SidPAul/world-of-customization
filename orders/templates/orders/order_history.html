@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_filters %}
+
+{% block title %}Order History - World of Customization{% endblock %}
+
+{% block content %}
+<style>
+    .item-delete-btn, .order-delete-btn {
+        opacity: 0.6;
+        transition: all 0.3s ease;
+    }
+    .item-delete-btn:hover, .order-delete-btn:hover {
+        opacity: 1 !important;
+        transform: scale(1.1);
+    }
+</style>
+<div class="order-history-page py-5">
+    <div class="container">
+        <div class="header-section mb-5">
+            <h2 class="section-title text-start mb-2">Curated Archives</h2>
+            <p class="text-secondary">A chronological collection of your bespoke creations and selections.</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                {% for order in orders %}
+                <div class="order-card-premium mb-4 shadow-sm border border-light">
+                    <div class="order-header-meta d-flex justify-content-between align-items-center p-3 bg-light rounded-top">
+                        <div class="d-flex align-items-center gap-4">
+                            <div class="meta-item">
+                                <span class="label text-uppercase small opacity-50 d-block mb-1" style="font-size: 0.7rem;">Order Index</span>
+                                <span class="value fw-bold fs-6">#ORD-{{ order.id|stringformat:"04d" }}</span>
+                            </div>
+                            <div class="meta-item border-start ps-4">
+                                <span class="label text-uppercase small opacity-50 d-block mb-1" style="font-size: 0.7rem;">Date Placed</span>
+                                <span class="value fw-medium fs-6">{{ order.created_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                        <div class="status-badge-wrapper">
+                            {% if order.status == 'Delivered' %}
+                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 border border-success border-opacity-25" style="font-weight: 500;"><i class="fas fa-check-circle me-1"></i>{{ order.status }}</span>
+                            {% elif order.status == 'Shipped' %}
+                            <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-2 border border-info border-opacity-25" style="font-weight: 500;"><i class="fas fa-shipping-fast me-1"></i>{{ order.status }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2 border border-secondary border-opacity-25" style="font-weight: 500;"><i class="fas fa-clock me-1"></i>{{ order.status }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="order-body-items p-3 px-4">
+                        <div class="items-list">
+                            {% for item in order.items.all %}
+                            <div
+                                class="order-item-row d-flex justify-content-between align-items-center {% if not forloop.last %}mb-2 pb-2 border-bottom{% endif %}">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3" style="width: 50px; height: 50px; border-radius: 8px; overflow: hidden;  background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                        {% if item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                        <i class="fas fa-box text-secondary opacity-50"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold fs-6" style="line-height: 1.2;">{{ item.product.name }}</h6>
+                                        <span class="text-secondary" style="font-size: 0.8rem;">{% regional_price item.price %} × {{ item.quantity }}</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="fw-bold fs-6">{% regional_price item.get_cost %}</span>
+                                    {% if not order.paid %}
+                                    <a href="{% url 'order-item-delete' item.id %}" class="text-danger item-delete-btn" onclick="return confirm('Remove {{ item.product.name }} from this order?')" title="Remove Item">
+                                        <i class="fas fa-times-circle"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if order.shipping_provider or order.tracking_number %}
+                        <div class="shipping-info-box mt-4 p-3 rounded" style="background-color: #f8f9fa; border: 1px dashed #dee2e6;">
+                            <h6 class="mb-2 fw-bold" style="font-size: 0.85rem;"><i class="fas fa-truck text-primary me-2"></i>Tracking details</h6>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-secondary small d-block mb-1">Carrier</span>
+                                    <span class="fw-medium">{{ order.shipping_provider|default:"Assigning Carrier" }}</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="text-secondary small d-block mb-1">Tracking Number (AWB)</span>
+                                    <span class="fw-bold text-accent">{{ order.tracking_number|default:"Generating..." }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div
+                        class="order-footer-summary d-flex justify-content-between align-items-center p-3 px-4 border-top">
+                <div class="payment-method small text-secondary">
+                    <i class="fas fa-wallet me-2"></i>
+                    <span class="fw-medium">Method:</span> 
+                    {% if order.payment_method == 'RAZORPAY' %}
+                        Razorpay
+                    {% elif order.payment_method == 'RAZORPAY_UPI' %}
+                        Razorpay UPI
+                    {% elif order.payment_method == 'UPI_MANUAL' %}
+                        Manual UPI ({{ order.upi_id }})
+                    {% elif order.payment_method == 'COD' %}
+                        Cash on Delivery
+                    {% else %}
+                        Online
+                    {% endif %}
+                    <span class="mx-2">|</span>
+                    {% if order.paid %}
+                        <span class="text-success"><i class="fas fa-check-circle me-1"></i>Paid</span>
+                    {% else %}
+                        <span class="text-warning"><i class="fas fa-clock me-1"></i>Payment Pending</span>
+                        <div class="d-inline-flex gap-2 ms-2">
+                            {% if order.payment_method == 'RAZORPAY' %}
+                            <a href="{% url 'order-pay' order.id %}" class="badge bg-warning text-dark text-decoration-none fw-medium py-1 px-3 d-inline-flex align-items-center" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                Pay Now <i class="fas fa-arrow-right ms-2 fs-7"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'order-delete' order.id %}" class="badge bg-danger text-white text-decoration-none fw-medium py-1 px-3 d-inline-flex align-items-center order-delete-btn" style="font-size: 0.75rem;" onclick="return confirm('Are you sure you want to cancel and delete this order?')" title="Cancel Order">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="total-aggregate">
+                    <span class="me-3 text-secondary">Investment Total</span>
+                    <span class="fs-5 fw-bold text-dark">{% regional_price order.get_total_cost %}</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state-boutique text-center py-5">
+            <div class="icon-circle mb-4">
+                <i class="fas fa-archive fs-1 opacity-25"></i>
+            </div>
+            <h3>Your archives are empty</h3>
+            <p class="text-secondary max-w-400 mx-auto">It seems you haven't curated any bespoke items yet. Start your
+                journey in our boutique collections.</p>
+            <a href="{% url 'product-list' %}" class="btn-detail btn-cart-premium mt-4">Discover Products</a>
+        </div>
+        {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
