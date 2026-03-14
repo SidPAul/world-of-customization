@@ -7,25 +7,29 @@
 <div class="product-detail-page py-5">
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5 px-4">
-            <div class="auth-card p-4 p-lg-5 rounded-4 shadow-sm border border-light" style="background: var(--card-bg);">
+            <div class="auth-card p-4 p-lg-5 rounded-4 shadow-sm border border-light"
+                style="background: var(--card-bg);">
                 <div class="text-center mb-4">
                     <span class="text-accent small fw-bold text-uppercase tracking-wider">Checkout</span>
                     <h2 class="section-title text-center mt-2 mb-2" style="font-size: 2rem;">Complete Payment</h2>
                     <p class="text-secondary small">Secure transaction via Razorpay</p>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-4 p-3 rounded" style="background: rgba(var(--bs-primary-rgb), 0.05);">
+                <div class="d-flex justify-content-between align-items-center mb-4 p-3 rounded"
+                    style="background: rgba(var(--bs-primary-rgb), 0.05);">
                     <span class="fw-bold">Total Amount</span>
                     <h3 class="fw-bold mb-0 text-accent">₹{{ order.get_total_cost }}</h3>
                 </div>
 
                 <!-- UPI & Razorpay Payment Button -->
-                <button id="rzp-button1" class="btn-detail btn-cart-premium w-100 border-0 mb-3" style="display: flex; align-items: center; justify-content: center; height: 56px;">
+                <button id="rzp-button1" class="btn-detail btn-cart-premium w-100 border-0 mb-3"
+                    style="display: flex; align-items: center; justify-content: center; height: 56px;">
                     <i class="fas fa-wallet me-2"></i> Pay with UPI / Card
                 </button>
 
                 <div class="text-center mt-3 opacity-75">
-                    <img src="{% static 'images/logo.png' %}" alt="Secure Payments" style="height: 24px; filter: grayscale(100%); opacity: 0.5;">
+                    <img src="{% static 'images/logo.png' %}" alt="Secure Payments"
+                        style="height: 24px; filter: grayscale(100%); opacity: 0.5;">
                 </div>
             </div>
         </div>
@@ -34,9 +38,12 @@
     <!-- Razorpay Checkout Script -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
+        console.log("Razorpay Key:", "{{ razorpay_key_id }}");
+        console.log("Order ID:", "{{ payment.id }}");
+        console.log("Amount:", "{{ payment.amount }}");
+
         var sequence = ["block.upi", "block.cards", "block.other"];
         {% if is_upi %}
-        // Prioritize UPI more aggressively if selected in previous step
         sequence = ["block.upi", "block.other"];
         {% endif %}
 
@@ -48,6 +55,7 @@
             "description": "Order #{{ order.id }}",
             "order_id": "{{ payment.id }}",
             "handler": function (response) {
+                console.log("Payment successful, verifying...");
                 fetch("{% url 'payment-verify' %}", {
                     method: "POST",
                     headers: {
@@ -59,66 +67,47 @@
                         razorpay_signature: response.razorpay_signature,
                     }),
                 })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        window.location.href = "{% url 'payment-success' %}";
-                    } else {
-                        alert("Payment verification failed. Please contact support.");
-                    }
-                })
-                .catch(err => {
-                    console.error("Error:", err);
-                    alert("An error occurred during verification.");
-                });
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            window.location.href = "{% url 'payment-success' %}";
+                        } else {
+                            alert("Payment verification failed: " + (data.error || "Unknown error"));
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Verification Error:", err);
+                        alert("An error occurred during verification.");
+                    });
             },
             "prefill": {
                 "name": "{{ order.user.get_full_name|default:order.user.username }}",
                 "email": "{{ order.user.email }}",
                 "contact": "{{ order.phone|default:'' }}",
-                {% if is_upi %}"method": "upi"{% endif %}
+                {% if is_upi %} "method": "upi"{% endif %}
             },
-            "theme": {
-                "color": "#111111"
-            },
-            "config": {
-                "display": {
-                    "blocks": {
-                        "upi": {
-                            "name": "Quick UPI (GPay, PhonePe)",
-                            "instruments": [{"method": "upi"}]
-                        },
-                        "cards": {
-                            "name": "Credit/Debit Card",
-                            "instruments": [{"method": "card"}]
-                        },
-                        "other": {
-                            "name": "Other Methods",
-                            "instruments": [{"method": "netbanking"}, {"method": "wallet"}]
-                        }
-                    },
-                    "sequence": sequence
-                }
-            }
+        "theme": {
+            "color": "#111111"
+        }
         };
 
-        var rzp1 = new Razorpay(options);
-        
-        rzp1.on('payment.failed', function (response){
-            alert("Payment Failed: " + response.error.description);
-        });
+        try {
+            var rzp1 = new Razorpay(options);
 
-        document.getElementById('rzp-button1').onclick = function (e) {
-            rzp1.open();
-            e.preventDefault();
-        }
+            rzp1.on('payment.failed', function (response) {
+                console.error("Payment Failed:", response.error);
+                alert("Payment Failed: " + response.error.description);
+            });
 
-        // Auto-open if redirected specifically for UPI
-        {% if is_upi %}
-        window.onload = function() {
-            rzp1.open();
+            document.getElementById('rzp-button1').onclick = function (e) {
+                console.log("Opening Razorpay...");
+                rzp1.open();
+                e.preventDefault();
+            }
+        } catch (err) {
+            console.error("Razorpay Init Error:", err);
+            alert("Could not initialize payment gateway. Please check your internet or configuration.");
         }
-        {% endif %}
     </script>
 </div>
 {% endblock %}
