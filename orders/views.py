@@ -8,6 +8,12 @@ from .models import OrderItem, Order
 from .forms import OrderCreateForm
 from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 @login_required
 def order_create(request):
@@ -40,12 +46,11 @@ def order_create(request):
                     order.razorpay_order_id = payment['id']
                     order.save()
                 except Exception as e:
-                    import logging
-                    logging.error(f"Razorpay Error: {str(e)}")
+                    logger.error(f"Razorpay Error: {str(e)}")
                     from django.contrib import messages
-                    messages.warning(request, "Payment gateway is currently in testing mode. Your order has been placed but payment is pending.")
+                    messages.warning(request, "Payment gateway issue. Order placed but payment still pending.")
                 
-                cart.clear() 
+                # We DON'T clear cart here. Only after successful payment verification.
                 
                 if payment:
                     context = {
@@ -111,8 +116,51 @@ def order_pay(request, order_id):
         messages.error(request, "Failed to initialize the payment gateway. Please try again.")
         return redirect('order-history')
 
+@csrf_exempt
+@login_required
+def payment_verify(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            razorpay_order_id = data.get('razorpay_order_id')
+            razorpay_payment_id = data.get('razorpay_payment_id')
+            razorpay_signature = data.get('razorpay_signature')
+
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+            
+            # Verify signature
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature': razorpay_signature
+            }
+            
+            client.utility.verify_payment_signature(params_dict)
+            
+            # Payment verified
+            order = get_object_or_404(Order, razorpay_order_id=razorpay_order_id)
+            order.paid = True
+            order.razorpay_payment_id = razorpay_payment_id
+            order.status = 'Processing'
+            order.save()
+            
+            # Clear cart on successful payment
+            cart = Cart(request)
+            cart.clear()
+
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            logger.error(f"Payment Verification Failed: {str(e)}")
+            return JsonResponse({'status': 'failure', 'error': str(e)}, status=400)
+    
+    return JsonResponse({'status': 'invalid request'}, status=400)
+
 @login_required
 def payment_success(request):
+    # Fallback to clear cart if redirected here
+    cart = Cart(request)
+    if cart:
+        cart.clear()
     return render(request, 'orders/success.html')
 
 @login_required
