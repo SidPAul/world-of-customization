@@ -14,6 +14,32 @@
                 <form method="post" class="checkout-form-premium">
                     {% csrf_token %}
 
+                    {% if form.errors %}
+                    <div class="alert alert-danger rounded-4 mb-4">
+                        <h6 class="fw-bold mb-2">Please correct the following errors:</h6>
+                        <ul class="mb-0 small">
+                            {% for field in form %}
+                            {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} rounded-4 mb-2 small">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
                     <!-- Section: Customer Information -->
                     <div class="checkout-section mb-5">
                         <h4 class="checkout-section-title mb-4">Customer Information</h4>
@@ -101,10 +127,12 @@
                     <!-- Section: Payment Method -->
                     <div class="checkout-section mb-5">
                         <h4 class="checkout-section-title mb-4">Payment Method</h4>
-                        
+
                         <div class="payment-options">
-                            <div class="form-check payment-option-card mb-3 p-3 border rounded-3" style="background: rgba(255,255,255,0.05);">
-                                <input class="form-check-input ms-0 me-3 mt-1" type="radio" name="payment_method" id="pay_razorpay" value="RAZORPAY" checked>
+                            <div class="form-check payment-option-card mb-3 p-3 border rounded-3"
+                                style="background: rgba(255,255,255,0.05);">
+                                <input class="form-check-input ms-0 me-3 mt-1" type="radio" name="payment_method"
+                                    id="pay_razorpay" value="RAZORPAY" checked>
                                 <label class="form-check-label w-100" for="pay_razorpay">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>Card / Netbanking (Razorpay)</span>
@@ -113,8 +141,10 @@
                                 </label>
                             </div>
 
-                            <div class="form-check payment-option-card mb-3 p-3 border rounded-3" style="background: rgba(255,255,255,0.05);">
-                                <input class="form-check-input ms-0 me-3 mt-1" type="radio" name="payment_method" id="pay_razorpay_upi" value="RAZORPAY_UPI">
+                            <div class="form-check payment-option-card mb-3 p-3 border rounded-3"
+                                style="background: rgba(255,255,255,0.05);">
+                                <input class="form-check-input ms-0 me-3 mt-1" type="radio" name="payment_method"
+                                    id="pay_razorpay_upi" value="RAZORPAY_UPI">
                                 <label class="form-check-label w-100" for="pay_razorpay_upi">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>UPI - GPay / PhonePe / Paytm (Razorpay)</span>
@@ -123,8 +153,10 @@
                                 </label>
                             </div>
 
-                            <div class="form-check payment-option-card mb-3 p-3 border rounded-3" style="background: rgba(255,255,255,0.05);">
-                                <input class="form-check-input ms-0 me-3 mt-1" type="radio" name="payment_method" id="pay_upi_manual" value="UPI_MANUAL">
+                            <div class="form-check payment-option-card mb-3 p-3 border rounded-3"
+                                style="background: rgba(255,255,255,0.05);">
+                                <input class="form-check-input ms-0 me-3 mt-1" type="radio" name="payment_method"
+                                    id="pay_upi_manual" value="UPI_MANUAL">
                                 <label class="form-check-label w-100" for="pay_upi_manual">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>Manual UPI Transfer (Bank Transfer)</span>
@@ -133,14 +165,17 @@
                                 </label>
                                 <div id="upi_id_container" class="mt-3 d-none">
                                     <div class="form-floating">
-                                        <input type="text" name="upi_id" id="id_upi_id" class="form-control" placeholder="yourname@upi">
+                                        <input type="text" name="upi_id" id="id_upi_id" class="form-control"
+                                            placeholder="yourname@upi">
                                         <label for="id_upi_id">Your UPI ID for Verification</label>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="form-check payment-option-card mb-4 p-3 border rounded-3" style="background: rgba(255,255,255,0.05);">
-                                <input class="form-check-input ms-0 me-3 mt-1" type="radio" name="payment_method" id="pay_cod" value="COD">
+                            <div class="form-check payment-option-card mb-4 p-3 border rounded-3"
+                                style="background: rgba(255,255,255,0.05);">
+                                <input class="form-check-input ms-0 me-3 mt-1" type="radio" name="payment_method"
+                                    id="pay_cod" value="COD">
                                 <label class="form-check-label w-100" for="pay_cod">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>Cash on Delivery (COD)</span>
@@ -156,7 +191,7 @@
                     </button>
 
                     <script>
-                        document.addEventListener('DOMContentLoaded', function() {
+                        document.addEventListener('DOMContentLoaded', function () {
                             const upiManualRadio = document.getElementById('pay_upi_manual');
                             const allRadios = document.querySelectorAll('input[name="payment_method"]');
                             const upiContainer = document.getElementById('upi_id_container');

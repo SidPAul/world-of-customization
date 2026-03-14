@@ -24,62 +24,71 @@ def order_create(request):
     if request.method == 'POST':
         form = OrderCreateForm(request.POST)
         if form.is_valid():
-            order = form.save(commit=False)
-            order.user = request.user
-            order.save()
-            for item in cart:
-                OrderItem.objects.create(order=order,
-                                         product=item['product'],
-                                         price=item['price'],
-                                         quantity=item['quantity'])
-            
-            # Payment method handling
-            if order.payment_method in ['RAZORPAY', 'RAZORPAY_UPI']:
-                # Razorpay Integration
-                payment = None
-                try:
-                    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-                    amount = int(cart.get_total_price() * 100) 
-                    data = { "amount": amount, "currency": "INR", "receipt": str(order.id) }
-                    payment = client.order.create(data=data)
-                    
-                    order.razorpay_order_id = payment['id']
-                    order.save()
-                except Exception as e:
-                    logger.error(f"Razorpay Error: {str(e)}")
+            try:
+                order = form.save(commit=False)
+                order.user = request.user
+                order.save()
+                
+                valid_items = 0
+                for item in cart:
+                    if not item.get('product'):
+                        logger.warning(f"Skipping checkout item with missing product: {item}")
+                        continue
+                        
+                    OrderItem.objects.create(order=order,
+                                             product=item['product'],
+                                             price=item['price'],
+                                             quantity=item['quantity'])
+                    valid_items += 1
+                
+                if valid_items == 0:
+                    order.delete()
                     from django.contrib import messages
-                    messages.warning(request, "Payment gateway issue. Order placed but payment still pending.")
+                    messages.error(request, "Your cart contains invalid products. Please clear your cart and try again.")
+                    return redirect('cart_detail')
+
+                # Payment method handling
+                if order.payment_method in ['RAZORPAY', 'RAZORPAY_UPI']:
+                    # Razorpay Integration
+                    payment = None
+                    try:
+                        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+                        amount = int(cart.get_total_price() * 100) 
+                        data = { "amount": amount, "currency": "INR", "receipt": str(order.id) }
+                        payment = client.order.create(data=data)
+                        
+                        order.razorpay_order_id = payment['id']
+                        order.save()
+                    except Exception as e:
+                        logger.error(f"Razorpay Error: {str(e)}")
+                        from django.contrib import messages
+                        messages.warning(request, "Payment gateway issue. Order placed but payment still pending.")
+                    
+                    if payment:
+                        context = {
+                            'order': order,
+                            'payment': payment,
+                            'razorpay_key_id': settings.RAZORPAY_KEY_ID,
+                            'is_upi': order.payment_method == 'RAZORPAY_UPI'
+                        }
+                        return render(request, 'orders/payment.html', context)
+                    else:
+                        return redirect('order-history')
                 
-                # We DON'T clear cart here. Only after successful payment verification.
-                
-                if payment:
-                    context = {
-                        'order': order,
-                        'payment': payment,
-                        'razorpay_key_id': settings.RAZORPAY_KEY_ID,
-                        'is_upi': order.payment_method == 'RAZORPAY_UPI'
-                    }
-                    return render(request, 'orders/payment.html', context)
-                else:
+                elif order.payment_method == 'UPI_MANUAL':
+                    cart.clear()
+                    from django.contrib import messages
+                    messages.success(request, f"Order placed! Please pay via Manual UPI.")
                     return redirect('order-history')
-            
-            elif order.payment_method == 'UPI_MANUAL':
-                # Manual UPI payment handling
-                cart.clear()
+                    
+                else:
+                    cart.clear()
+                    return redirect('order-history')
+            except Exception as e:
+                logger.error(f"Order Creation Error: {str(e)}")
                 from django.contrib import messages
-                messages.success(request, f"Order placed! Please pay via Manual UPI using ID: {order.upi_id}.")
-                return redirect('order-history')
-                
-            elif order.payment_method == 'COD':
-                # Cash on Delivery handling
-                cart.clear()
-                from django.contrib import messages
-                messages.success(request, "Order placed successfully! You can pay via Cash on Delivery.")
-                return redirect('order-history')
-            
-            else:
-                cart.clear()
-                return redirect('order-history')
+                messages.error(request, f"An error occurred while creating your order: {str(e)}")
+                return redirect('checkout')
     else:
         form = OrderCreateForm()
     return render(request, 'orders/create.html', {'cart': cart, 'form': form})
