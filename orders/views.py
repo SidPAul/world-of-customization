@@ -81,6 +81,12 @@ def order_create(request):
                     messages.success(request, f"Order placed! Please pay via Manual UPI.")
                     return redirect('order-history')
                     
+                elif order.payment_method == 'COD':
+                    cart.clear()
+                    from django.contrib import messages
+                    messages.success(request, "Order placed successfully! You can pay via Cash on Delivery.")
+                    return redirect('order-history')
+                    
                 else:
                     cart.clear()
                     return redirect('order-history')
